@@ -96,7 +96,7 @@ def install_dependencies(sudo_cmd='sudo ', cuda_version=None):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Install various build and test dependencies of TorchServe")
-    parser.add_argument('--cuda', default=None, choices=['cu101'], help="CUDA version for torch")
+    parser.add_argument('--cuda', default=None, choices=['cu101', 'latest'], help="CUDA version for torch")
     args = parser.parse_args()
 
     install_dependencies('', cuda_version=args.cuda)
