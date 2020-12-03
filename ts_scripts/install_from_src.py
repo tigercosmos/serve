@@ -3,7 +3,7 @@ import sys
 import time
 import shutil
 
-from ts_scripts import install_dependencies as idep
+from ts_scripts import tsutils as ts
 
 # To help discover local modules
 REPO_ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
@@ -11,7 +11,7 @@ sys.path.append(REPO_ROOT)
 
 
 def clean_slate():
-    from ts_scripts import tsutils as ts
+
     print("## Uninstall existing torchserve and model archiver")
     if ts.is_conda_env():
         cmd = "conda uninstall -y torchserve torch-model-archiver"
@@ -56,5 +56,4 @@ def install_from_src():
 
 
 if __name__ == '__main__':
-    idep.install_dependencies()
     install_from_src()
