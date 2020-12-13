@@ -18,7 +18,7 @@ def clean_slate():
     if is_conda_env():
         cmd = "conda uninstall -y torchserve torch-model-archiver"
     else:
-        cmd = "pip uninstall -y torchserve torch-model-archiver"
+        cmd = "pip3 uninstall -y torchserve torch-model-archiver"
     print(f"## In directory: {os.getcwd()} | Executing command: {cmd}")
     os.system(cmd)
     time.sleep(5)
@@ -26,14 +26,14 @@ def clean_slate():
 
 def install_torchserve():
     print("## Install torchserve from source")
-    cmd = "pip install ."
+    cmd = "pip3 install ."
     print(f"## In directory: {os.getcwd()} | Executing command: {cmd}")
     os.system(cmd)
 
 
 def install_torch_model_archiver():
     print("## Install torch-model-archiver from source")
-    cmd = "pip install model-archiver/."
+    cmd = "pip3 install model-archiver/."
     print(f"## In directory: {os.getcwd()} | Executing command: {cmd}")
     os.system(cmd)
 
