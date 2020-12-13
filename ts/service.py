@@ -93,6 +93,8 @@ class Service(object):
         metrics = MetricsStore(req_id_map, self.context.model_name)
         self.context.metrics = metrics
 
+        print("\n\t\tEnter Servie\t\t\n")
+
         start_time = time.time()
 
         # noinspection PyBroadException

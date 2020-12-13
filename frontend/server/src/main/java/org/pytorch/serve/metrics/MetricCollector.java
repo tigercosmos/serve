@@ -77,7 +77,7 @@ public class MetricCollector implements Runnable {
                     if (metric == null) {
                         logger.warn("Parse metrics failed: " + line);
                     } else {
-                        loggerMetrics.info(metric);
+                        //loggerMetrics.info(metric);
                         metricsSystem.add(metric);
                     }
                 }

@@ -20,6 +20,7 @@ class VisionHandler(BaseHandler, ABC):
         super().initialize(context)
         self.ig = IntegratedGradients(self.model)
         self.initialized = True
+        print("\n\t\tYYYYYYYYYYYYYYYYYYY Vision Hangle  {}\t\t\n".format(self.device))
 
     def preprocess(self, data):
         """The preprocess function of MNIST program converts the input data to a float tensor

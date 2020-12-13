@@ -30,6 +30,7 @@ class BaseHandler(abc.ABC):
         self.map_location = None
         self.explain = False
         self.target = 0
+        print("\n\t\tYYYYYYYYYY BASE HANDLER!!!\t\t\n")
 
     def initialize(self, context):
         """Initialize function loads the model.pt file and initialized the model object.
@@ -50,6 +51,7 @@ class BaseHandler(abc.ABC):
             if torch.cuda.is_available()
             else self.map_location
         )
+        print("\n\t\tYYYYYYYYYYYYYYYYYYY device id {}\t\t\n".format(self.device))
         self.manifest = context.manifest
 
         model_dir = properties.get("model_dir")
