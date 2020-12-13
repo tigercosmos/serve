@@ -14,7 +14,8 @@ from ts_scripts.utils import check_python_version
 class Common():
     def __init__(self):
         self.torch_stable_url = "https://download.pytorch.org/whl/torch_stable.html"
-        self.sudo_cmd = 'sudo '
+        # self.sudo_cmd = 'sudo '
+        self.sudo_cmd = ''
 
     def install_java(self):
         pass
@@ -24,20 +25,20 @@ class Common():
 
     def install_torch_packages(self, cuda_version):
         if cuda_version and cuda_version != "latest":
-            os.system(f"pip install -U -r requirements/torch_{cuda_version}.txt -f {self.torch_stable_url}")
+            os.system(f"pip3 install -U -r requirements/torch_{cuda_version}.txt -f {self.torch_stable_url}")
         else:
-            os.system(f"pip install -U -r requirements/torch.txt")
+            os.system(f"pip3 install -U -r requirements/torch.txt")
 
     def install_python_packages(self, cuda_version, requirements_file_path):
         if os.system("conda") == 0:
-            # conda install command should run before the pip install commands
+            # conda install command should run before the pip3 install commands
             # as it may reinstall the packages with different versions
             os.system("conda install -y conda-build")
 
         self.install_torch_packages(cuda_version)
-        os.system("pip install -U pip setuptools")
+        os.system("pip3 install -U pip3 setuptools")
         # developer.txt also installs packages from common.txt
-        os.system("pip install -U -r {0}".format(requirements_file_path))
+        os.system("pip3 install -U -r {0}".format(requirements_file_path))
         # If conda is available install conda-build package
 
 
@@ -61,7 +62,7 @@ class Linux(Common):
         os.system(f"{self.sudo_cmd}curl -sL https://deb.nodesource.com/setup_14.x | {self.sudo_cmd}bash -")
         os.system(f"{self.sudo_cmd}apt-get install -y nodejs")
         os.system(f"{self.sudo_cmd}ln -sf {python_path} /usr/bin/python")
-        os.system(f"{self.sudo_cmd}ln -sf /usr/bin/pip3 /usr/bin/pip")
+        os.system(f"{self.sudo_cmd}ln -sf /usr/bin/pip /usr/bin/pip3")
 
 
 class Windows(Common):
@@ -71,9 +72,9 @@ class Windows(Common):
 
     def install_torch_packages(self, cuda_version):
         if cuda_version and cuda_version != "latest":
-            os.system(f"pip install -U -r requirements/torch_{cuda_version}.txt -f {self.torch_stable_url}")
+            os.system(f"pip3 install -U -r requirements/torch_{cuda_version}.txt -f {self.torch_stable_url}")
         else:
-            os.system(f"pip install -U -r requirements/torch.txt -f {self.torch_stable_url}")
+            os.system(f"pip3 install -U -r requirements/torch.txt -f {self.torch_stable_url}")
 
     def install_java(self):
         pass
@@ -100,7 +101,7 @@ class Darwin(Common):
 
 
     def install_torch_packages(self, cuda_version=''):
-        os.system(f"pip install -U -r requirements/torch.txt -f {self.torch_stable_url}")
+        os.system(f"pip3 install -U -r requirements/torch.txt -f {self.torch_stable_url}")
 
 
 def install_dependencies(cuda_version=None):
