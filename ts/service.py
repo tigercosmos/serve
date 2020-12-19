@@ -93,7 +93,8 @@ class Service(object):
         metrics = MetricsStore(req_id_map, self.context.model_name)
         self.context.metrics = metrics
 
-        print("\n\t\tEnter Servie\t\t\n")
+        print("\n\t\tYYYYYYYYYYYYYYY Enter Servie\t\t\n")
+        print("\n\t\tYYYYYYYYYYYYYYYY {}\t\t\n".format(self.context._system_properties))
 
         start_time = time.time()
 
