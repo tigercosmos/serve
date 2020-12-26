@@ -55,6 +55,7 @@ public class InferenceRequestHandler extends HttpRequestHandlerChain {
             if (endpointMap.getOrDefault(segments[1], null) != null) {
                 handleCustomEndpoint(ctx, req, segments, decoder);
             } else {
+              System.out.println("XXXXXXXXXXXXXXXXX   predict request: " + segments[1]);
                 switch (segments[1]) {
                     case "ping":
                         Runnable r =
