@@ -9,10 +9,9 @@ import importlib.util
 import time
 import torch
 
-from ..utils.util import list_classes_from_module, load_label_mapping
+from ..utils.util import list_classes_from_module, load_label_mapping, DataFlow
 
 logger = logging.getLogger(__name__)
-
 
 class BaseHandler(abc.ABC):
     """
@@ -24,6 +23,7 @@ class BaseHandler(abc.ABC):
         self.model = None
         self.mapping = None
         self.device = None
+        self.device_id = 0
         self.initialized = False
         self.context = None
         self.manifest = None
@@ -51,6 +51,7 @@ class BaseHandler(abc.ABC):
             if torch.cuda.is_available()
             else self.map_location
         )
+        self.device_id = properties.get("gpu_id")
         print("\n\t\tYYYYYYYYYYYYYYYYYYY device id {}\t\t\n".format(self.device))
         self.manifest = context.manifest
 
@@ -71,10 +72,23 @@ class BaseHandler(abc.ABC):
             logger.debug("Loading torchscript model")
             self.model = self._load_torchscript_model(model_pt_path)
 
-        self.model.to(self.device)
         self.model.eval()
 
         logger.debug('Model file %s loaded successfully', model_pt_path)
+
+        # wrap the model to DataFlow class
+        self.model = DataFlow(self.model, inference_only=True, output_device=self.device)
+        # TODO change the layer gpus here
+        # the scheduler should modify the layer_gpus for configuring the gpu for each layer
+        s = 0
+        for key, value in self.model.layer_gpus.items():
+            self.model.layer_gpus[key] = s % len(self.model.device_ids)
+            s += 1
+
+        # after you modified the layer_gpus, you should update the flow
+        self.model.update_flow()
+
+
 
         # Load class mapping for classifiers
         mapping_file_path = os.path.join(model_dir, "index_to_name.json")
@@ -124,7 +138,8 @@ class BaseHandler(abc.ABC):
             )
 
         model_class = model_class_definitions[0]
-        state_dict = torch.load(model_pt_path, map_location=self.map_location)
+        state_dict = torch.load(model_pt_path, map_location='cpu')
+        # state_dict = torch.load(model_pt_path, map_location=self.map_location)
         model = model_class()
         model.load_state_dict(state_dict)
         return model
