@@ -180,6 +180,7 @@ public class WorkerThread implements Runnable {
         try {
             connect();
 
+		System.out.println("XXXXXX GPU ID  " + gpuId);
             while (isRunning()) {
                 req = aggregator.getRequest(workerId, state);
 
