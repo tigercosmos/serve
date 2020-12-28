@@ -13,7 +13,6 @@ import types
 import ast
 import copy
 import textwrap
-import astunparse
 
 import torch
 from torch.nn.modules import Module
@@ -224,8 +223,6 @@ class DataFlow(Module):
         namespace = self.module.forward.__globals__
         exec(code, namespace)
         self.module.forward = types.MethodType(namespace['forward'], self.module)
-
-        # print(astunparse.unparse(tree))
 
     def forward(self, *inputs, **kwargs):
         return self.module(*inputs, **kwargs)
