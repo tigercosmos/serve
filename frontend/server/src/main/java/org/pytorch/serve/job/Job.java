@@ -20,8 +20,7 @@ public abstract class Job {
         this.modelVersion = version;
         begin = System.nanoTime();
         scheduled = begin;
-	System.out.println("XXXXXXXXXXXXXXXXXXXXXXX  " + cmd);
-	System.out.println("XXXXXXXXXXXXXXXXXXXXXXX  " + input);
+	    System.out.println("XXXXXXXXXXXXXXXXXXXXXXX  CMD " + cmd);
     }
 
     public String getJobId() {

@@ -14,6 +14,8 @@ import org.apache.commons.io.FilenameUtils;
 import org.pytorch.serve.archive.ModelArchive;
 import org.pytorch.serve.job.Job;
 import org.pytorch.serve.util.ConfigManager;
+import org.pytorch.serve.ModelServer;
+import org.pytorch.serve.Scheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,6 +41,7 @@ public class Model {
     private ReentrantLock lock;
     private int responseTimeout;
     private ModelVersionName modelVersionName;
+    private Scheduler scheduler;
 
     // Total number of subsequent inference request failures
     private AtomicInteger failedInfReqs;
@@ -58,6 +61,8 @@ public class Model {
         modelVersionName =
                 new ModelVersionName(
                         this.modelArchive.getModelName(), this.modelArchive.getModelVersion());
+
+        scheduler = ModelServer.getSchedulerInstance();
     }
 
     public JsonObject getModelState(boolean isDefaultVersion) {
@@ -176,6 +181,8 @@ public class Model {
         if (jobsQueue != null && !jobsQueue.isEmpty()) {
             Job j = jobsQueue.poll(waitTime, TimeUnit.MILLISECONDS);
             if (j != null) {
+                logger.info("XXXXXXXX get job: {}", j.getJobId());
+
                 jobsRepo.put(j.getJobId(), j);
                 return;
             }
@@ -187,7 +194,8 @@ public class Model {
             jobsQueue = jobsDb.get(DEFAULT_DATA_QUEUE);
 
             Job j = jobsQueue.poll(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-            logger.trace("get first job: {}", Objects.requireNonNull(j).getJobId());
+            logger.info("XXXXXXXX get first job: {}", Objects.requireNonNull(j).getJobId());
+            scheduler.addJob(this.modelArchive.getModelName(), Objects.requireNonNull(j).getJobId());
 
             jobsRepo.put(j.getJobId(), j);
             long begin = System.currentTimeMillis();
@@ -199,12 +207,14 @@ public class Model {
                 long end = System.currentTimeMillis();
                 maxDelay -= end - begin;
                 begin = end;
+                logger.info("XXXXXXXX get other job: {}", Objects.requireNonNull(j).getJobId());
+
                 jobsRepo.put(j.getJobId(), j);
                 if (maxDelay <= 0) {
                     break;
                 }
             }
-            logger.trace("sending jobs, size: {}", jobsRepo.size());
+            logger.info("XXXXXX sending jobs, size: {}", jobsRepo.size());
         } finally {
             if (lock.isHeldByCurrentThread()) {
                 lock.unlock();

@@ -50,6 +50,7 @@ import org.pytorch.serve.util.ServerGroups;
 import org.pytorch.serve.wlm.Model;
 import org.pytorch.serve.wlm.ModelManager;
 import org.pytorch.serve.wlm.WorkLoadManager;
+import org.pytorch.serve.Scheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,12 +64,19 @@ public class ModelServer {
     private List<ChannelFuture> futures = new ArrayList<>(2);
     private AtomicBoolean stopped = new AtomicBoolean(false);
     private ConfigManager configManager;
+    private static Scheduler scheduler;
     public static final int MAX_RCVBUF_SIZE = 4096;
 
     /** Creates a new {@code ModelServer} instance. */
     public ModelServer(ConfigManager configManager) {
+        logger.info("XXXXXXXXXXXXX new a ModelServer");
         this.configManager = configManager;
         serverGroups = new ServerGroups(configManager);
+        scheduler = new Scheduler();
+    }
+
+    public static Scheduler getSchedulerInstance() {
+        return scheduler;
     }
 
     public static void main(String[] args) {

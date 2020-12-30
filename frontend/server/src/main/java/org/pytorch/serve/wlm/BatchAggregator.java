@@ -30,6 +30,8 @@ public class BatchAggregator {
 
         ModelInferenceRequest req = new ModelInferenceRequest(model.getModelName());
 
+        logger.info("XXXXXXXXXX pollBatch");
+
         model.pollBatch(
                 threadName, (state == WorkerState.WORKER_MODEL_LOADED) ? 0 : Long.MAX_VALUE, jobs);
 
@@ -40,6 +42,8 @@ public class BatchAggregator {
                             "Received more than 1 control command. "
                                     + "Control messages should be processed/retrieved one at a time.");
                 }
+                logger.info("XXXXXXXXXX isControlCmd");
+
                 RequestInput input = j.getPayload();
                 int gpuId = -1;
                 String gpu = input.getStringParameter("gpu");
@@ -48,6 +52,8 @@ public class BatchAggregator {
                 }
                 return new ModelLoadModelRequest(model, gpuId);
             } else {
+                logger.info("XXXXXXXXXX NOT isControlCmd");
+
                 j.setScheduled();
                 req.addRequest(j.getPayload());
             }

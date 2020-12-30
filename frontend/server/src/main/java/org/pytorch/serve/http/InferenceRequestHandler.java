@@ -27,6 +27,7 @@ import org.pytorch.serve.util.messages.RequestInput;
 import org.pytorch.serve.util.messages.WorkerCommands;
 import org.pytorch.serve.wlm.Model;
 import org.pytorch.serve.wlm.ModelManager;
+import org.pytorch.serve.ModelServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +56,13 @@ public class InferenceRequestHandler extends HttpRequestHandlerChain {
             if (endpointMap.getOrDefault(segments[1], null) != null) {
                 handleCustomEndpoint(ctx, req, segments, decoder);
             } else {
-              System.out.println("XXXXXXXXXXXXXXXXX   predict request: " + segments[1]);
+              String s = "";
+              for (int i = 0; i < segments.length; i++) { 
+                s += segments[i] + ", ";
+              }
+
+              logger.info("XXXXXXXXXXXXXXXXX   predict request: " + s);
+
                 switch (segments[1]) {
                     case "ping":
                         Runnable r =
@@ -211,6 +218,8 @@ public class InferenceRequestHandler extends HttpRequestHandlerChain {
                 throw new BadRequestException("Parameter model_name is required.");
             }
         }
+
+        logger.info("XXXXXXXXXXX Predict Model: " + modelName);
 
         if (HttpMethod.OPTIONS.equals(req.method())) {
             ModelManager modelManager = ModelManager.getInstance();
