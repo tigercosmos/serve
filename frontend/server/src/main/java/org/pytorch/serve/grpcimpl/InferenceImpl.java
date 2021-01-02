@@ -77,7 +77,9 @@ public class InferenceImpl extends InferenceAPIsServiceImplBase {
                         modelName,
                         modelVersion,
                         WorkerCommands.PREDICT,
-                        inputData);
+                        inputData,
+                        1000
+                    );
 
         try {
             if (!ModelManager.getInstance().addJob(job)) {

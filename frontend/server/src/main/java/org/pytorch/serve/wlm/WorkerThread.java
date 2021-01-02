@@ -340,11 +340,13 @@ public class WorkerThread implements Runnable {
 
                                         Job job =
                                                 new RestJob(
-                                                        null,
-                                                        modelName,
-                                                        modelVersion,
-                                                        WorkerCommands.LOAD,
-                                                        input);
+                                                    null,
+                                                    modelName,
+                                                    modelVersion,
+                                                    WorkerCommands.LOAD,
+                                                    input,
+                                                    1000 // const deadline for now
+                                                );
                                         model.addJob(workerId, job);
                                         latch.countDown();
                                     });

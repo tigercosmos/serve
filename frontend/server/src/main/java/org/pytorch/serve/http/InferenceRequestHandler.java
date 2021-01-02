@@ -235,7 +235,7 @@ public class InferenceRequestHandler extends HttpRequestHandlerChain {
         }
 
         MetricAggregator.handleInferenceMetric(modelName, modelVersion);
-        Job job = new RestJob(ctx, modelName, modelVersion, WorkerCommands.PREDICT, input);
+        Job job = new RestJob(ctx, modelName, modelVersion, WorkerCommands.PREDICT, input, 1000); // TODO
         if (!ModelManager.getInstance().addJob(job)) {
             String responseMessage =
                     ApiUtils.getInferenceErrorResponseMessage(modelName, modelVersion);
