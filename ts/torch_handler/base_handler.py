@@ -8,8 +8,14 @@ import os
 import importlib.util
 import time
 import torch
+import torch.backends.cudnn as cudnn
 
 from ..utils.util import list_classes_from_module, load_label_mapping, DataFlow
+from torch._utils import (
+    _get_all_device_indices,
+    _get_available_device_type,
+    _get_device_index,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -72,23 +78,27 @@ class BaseHandler(abc.ABC):
             logger.debug("Loading torchscript model")
             self.model = self._load_torchscript_model(model_pt_path)
 
+        if torch.cuda.is_available():
+            cudnn.benchmark = True
+            logger.debug("Using cudnn.benchmark")
+            
         self.model.eval()
 
         logger.debug('Model file %s loaded successfully', model_pt_path)
 
+
         # wrap the model to DataFlow class
-        self.model = DataFlow(self.model, inference_only=True, output_device=self.device)
+        self.model = DataFlow(self.model, inference_only=True, output_device=self.device, fine_grained=True)
         # TODO change the layer gpus here
         # the scheduler should modify the layer_gpus for configuring the gpu for each layer
         s = 0
         for key, value in self.model.layer_gpus.items():
-            self.model.layer_gpus[key] = s % len(self.model.device_ids)
+            self.model.layer_gpus[key] = s % len(self.model.device_ids) # _get_device_index(self.device, True)
             s += 1
+        
 
         # after you modified the layer_gpus, you should update the flow
         self.model.update_flow()
-
-
 
         # Load class mapping for classifiers
         mapping_file_path = os.path.join(model_dir, "index_to_name.json")
@@ -105,7 +115,8 @@ class BaseHandler(abc.ABC):
         Returns:
             (NN Model Object) : Loads the model object.
         """
-        return torch.jit.load(model_pt_path, map_location=self.map_location)
+        return torch.jit.load(model_pt_path, map_location='cpu')
+        # return torch.jit.load(model_pt_path, map_location=self.map_location)
 
     def _load_pickled_model(self, model_dir, model_file, model_pt_path):
         """
@@ -169,6 +180,7 @@ class BaseHandler(abc.ABC):
         Returns:
             Torch Tensor : The Predicted Torch Tensor is returned in this function.
         """
+
         marshalled_data = data.to(self.device)
         with torch.no_grad():
             results = self.model(marshalled_data, *args, **kwargs)
