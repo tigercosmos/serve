@@ -78,9 +78,9 @@ class BaseHandler(abc.ABC):
             logger.debug("Loading torchscript model")
             self.model = self._load_torchscript_model(model_pt_path)
 
-        if torch.cuda.is_available():
-            cudnn.benchmark = True
-            logger.debug("Using cudnn.benchmark")
+        # if torch.cuda.is_available():
+        #     cudnn.benchmark = True
+        #     logger.debug("Using cudnn.benchmark")
             
         self.model.eval()
 
@@ -88,7 +88,7 @@ class BaseHandler(abc.ABC):
 
 
         # wrap the model to DataFlow class
-        self.model = DataFlow(self.model, inference_only=True, output_device=self.device, fine_grained=True)
+        self.model = DataFlow(self.model, inference_only=True, output_device=self.device, clear_cache=True)
         # TODO change the layer gpus here
         # the scheduler should modify the layer_gpus for configuring the gpu for each layer
         s = 0
