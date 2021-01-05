@@ -95,7 +95,7 @@ class BaseHandler(abc.ABC):
         for key, value in self.model.layer_gpus.items():
             self.model.layer_gpus[key] = s % len(self.model.device_ids) # _get_device_index(self.device, True)
             s += 1
-        
+            print("\n\t\tYYYYYYYYYYY gpu layers: ", key, self.model.layer_gpus[key])
 
         # after you modified the layer_gpus, you should update the flow
         self.model.update_flow()
@@ -219,6 +219,26 @@ class BaseHandler(abc.ABC):
 
         self.context = context
         metrics = self.context.metrics
+
+        # Check if GPU layers are the same
+        should_update = False
+        cnt = 0
+        for k, v in self.model.layer_gpus.items():
+            print("\t\tYYYY Layer: origin vs new:", k,  v, self.context.gpu_layers[cnt])
+            
+            # context's GPU layers are less than the model's, keep the remaining the same
+            if cnt == len(self.context.gpu_layers):
+                break
+            
+            if v != self.context.gpu_layers[cnt]:
+                self.model.layer_gpus[k] = self.context.gpu_layers[cnt]
+                cnt += 1
+                should_update = True            
+
+        if should_update:
+            print("\n\t\tYYYYYYYYYYYYYYY layer GPU change, update flow\t\t\n")
+            self.model.update_flow()
+
 
         data_preprocess = self.preprocess(data)
 

@@ -25,6 +25,8 @@ class Context(object):
         self.request_processor = None
         self._metrics = None
 
+        self.layer_gpus = None
+
     @property
     def system_properties(self):
         return self._system_properties

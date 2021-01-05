@@ -54,6 +54,7 @@ class Service(object):
         req_to_id_map = {}
         headers = []
         input_batch = []
+        gpu_layers = None
         for batch_idx, request_batch in enumerate(batch):
             req_id = request_batch.get('requestId').decode("utf-8")
             parameters = request_batch['parameters']
@@ -64,6 +65,11 @@ class Service(object):
             for parameter in parameters:
                 model_in.update({parameter["name"]: parameter["value"]})
                 model_in_headers.update({parameter["name"]: {"content-type": parameter["contentType"]}})
+                
+                if parameter["name"] == "gpu_layers":
+                    tmp = parameter["value"].decode("utf-8").split(",")
+                    gpu_layers = [int(x) for x in tmp]
+                    print("\n\t\tYYYYYYYY GPU layer config from frontend: ", gpu_layers )         
 
             # Request level headers are populated here
             if request_batch.get("headers") is not None:
@@ -74,7 +80,7 @@ class Service(object):
             input_batch.append(model_in)
             req_to_id_map[batch_idx] = req_id
 
-        return headers, input_batch, req_to_id_map
+        return headers, input_batch, req_to_id_map, gpu_layers
 
     def predict(self, batch):
         """
@@ -86,12 +92,13 @@ class Service(object):
         :return:
 
         """
-        headers, input_batch, req_id_map = Service.retrieve_data_for_inference(batch)
+        headers, input_batch, req_id_map, gpu_layers = Service.retrieve_data_for_inference(batch)
 
         self.context.request_ids = req_id_map
         self.context.request_processor = headers
         metrics = MetricsStore(req_id_map, self.context.model_name)
         self.context.metrics = metrics
+        self.context.gpu_layers = gpu_layers
 
         print("\n\t\tYYYYYYYYYYYYYYY Enter Servie\t\t\n")
         print("\n\t\tYYYYYYYYYYYYYYYY {}\t\t\n".format(self.context._system_properties))

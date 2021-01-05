@@ -280,6 +280,9 @@ public class InferenceRequestHandler extends HttpRequestHandlerChain {
         } else {
             byte[] content = NettyUtils.getBytes(req.content());
             inputData.addParameter(new InputParameter("body", content, contentType));
+
+            inputData.addParameter(
+                new InputParameter("gpu_layers", "1,0,1,0,1,1,1,1"));
         }
         return inputData;
     }

@@ -50,7 +50,7 @@ class TorchModelServiceWorker(object):
             raise ValueError("Incomplete data provided")
 
         logging.info("Listening on port: %s", s_name)
-        print("\n\t\tYYYYYYYYYYY Listening on port: %s\t\t\n", s_name)
+        print("\n\t\tYYYYYYYYYYY Listening on port: {}\t\t\n".format(s_name))
         socket_family = socket.AF_INET if s_type == "tcp" else socket.AF_UNIX
         self.sock = socket.socket(socket_family, socket.SOCK_STREAM)
 
