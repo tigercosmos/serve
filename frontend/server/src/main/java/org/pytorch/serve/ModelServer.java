@@ -164,6 +164,7 @@ public class ModelServer {
 
         ModelManager modelManager = ModelManager.getInstance();
         int workers = configManager.getDefaultWorkers();
+
         if ("ALL".equalsIgnoreCase(loadModels)) {
             String modelStore = configManager.getModelStore();
             if (modelStore == null) {
@@ -249,6 +250,10 @@ public class ModelServer {
                         true,
                         false);
                 startupModels.add(archive.getModelName());
+
+                scheduler.addGpuNumber(workers);
+                scheduler.addModelNumber(1);
+                logger.info("XXXXXXXXXX Scheduler has {} models {} GPU workers", scheduler.getModelNumber(), scheduler.getGpuNumber());
             } catch (ModelException | IOException | InterruptedException e) {
                 logger.warn("Failed to load model: " + url, e);
             }

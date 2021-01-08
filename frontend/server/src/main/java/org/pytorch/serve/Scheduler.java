@@ -5,14 +5,15 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.pytorch.serve.util.messages.InputParameter;
 
 public class Scheduler {
     private Logger logger = LoggerFactory.getLogger(ModelServer.class);
 
-    private Integer counter;
+    private int counter;
     
-    private Integer gpuNumber;
-    private Integer modelNumber;
+    private int gpuNumber;
+    private int modelNumber;
 
     // store the jobs for later scheduling
     private CopyOnWriteArrayList<Job> jobList;
@@ -41,12 +42,20 @@ public class Scheduler {
         counter = 0;
     }
 
-    public void SetGpuNumber(Integer n) {
-        gpuNumber = n;
+    public int getGpuNumber() {
+        return gpuNumber;
     }
 
-    public void SetModelNumber(Integer n) {
-        modelNumber = n;
+    public int getModelNumber() {
+        return modelNumber;
+    }
+
+    public void addGpuNumber(int n) {
+        gpuNumber += n;
+    }
+
+    public void addModelNumber(int n) {
+        modelNumber += n;
     }
 
     public Job pollScheduledJob() {
@@ -64,7 +73,7 @@ public class Scheduler {
 
     public boolean addJob(Job job) {
         logger.info("XXXXXXXXX add new job in scheduler {}, {}, {}",
-            counter, job.getModelName(), job.getJobId());
+            counter++, job.getModelName(), job.getJobId());
         jobList.add(job);
         schedule();
 
@@ -73,7 +82,7 @@ public class Scheduler {
 
     public void addFirst(Job job) {
         logger.info("XXXXXXXXX add first new job in scheduler {}, {}, {}",
-            counter, job.getModelName(), job.getJobId());
+            counter++, job.getModelName(), job.getJobId());
         jobList.add(0, job);
     }
 }
