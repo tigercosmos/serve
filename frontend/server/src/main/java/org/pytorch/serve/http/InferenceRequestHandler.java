@@ -143,16 +143,17 @@ public class InferenceRequestHandler extends HttpRequestHandlerChain {
         }
 
         String modelVersion = null;
+        String deadline = null;
 
         if (segments.length == 4) {
-            modelVersion = segments[3];
+            deadline = segments[3];
         }
         req.headers().add("explain", "False");
         if (explain) {
             req.headers().add("explain", "True");
         }
 
-        predict(ctx, req, null, segments[2], modelVersion);
+        predict(ctx, req, null, segments[2], modelVersion, deadline);
     }
 
     private void handleKFV1Predictions(
@@ -160,13 +161,13 @@ public class InferenceRequestHandler extends HttpRequestHandlerChain {
             throws ModelNotFoundException, ModelVersionNotFoundException {
         String modelVersion = null;
         String modelName = segments[3].split(":")[0];
+        String deadline = null;
 
         req.headers().add("explain", "False");
         if (explain) {
             req.headers().add("explain", "True");
         }
-
-        predict(ctx, req, null, modelName, modelVersion);
+        predict(ctx, req, null, modelName, modelVersion, deadline);
     }
 
     private void handleInvocations(
@@ -184,7 +185,7 @@ public class InferenceRequestHandler extends HttpRequestHandlerChain {
                 modelName = ModelManager.getInstance().getStartupModels().iterator().next();
             }
         }
-        predict(ctx, req, decoder, modelName, null);
+        predict(ctx, req, decoder, modelName, null, null);
     }
 
     private void handleLegacyPredict(
@@ -195,13 +196,14 @@ public class InferenceRequestHandler extends HttpRequestHandlerChain {
             throws ModelNotFoundException, ModelVersionNotFoundException {
 
         String modelVersion = null;
+        String deadline = null;
         if (segments.length == 4 && "predict".equals(segments[3])) {
             modelVersion = segments[2];
         } else if (segments.length < 3 || !"predict".equals(segments[2])) {
             throw new ResourceNotFoundException();
         }
 
-        predict(ctx, req, decoder, segments[1], modelVersion);
+        predict(ctx, req, decoder, segments[1], modelVersion, deadline);
     }
 
     private void predict(
@@ -209,7 +211,8 @@ public class InferenceRequestHandler extends HttpRequestHandlerChain {
             FullHttpRequest req,
             QueryStringDecoder decoder,
             String modelName,
-            String modelVersion)
+            String modelVersion,
+            String deadline)
             throws ModelNotFoundException, ModelVersionNotFoundException {
         RequestInput input = parseRequest(ctx, req, decoder);
         if (modelName == null) {
@@ -235,7 +238,7 @@ public class InferenceRequestHandler extends HttpRequestHandlerChain {
         }
 
         MetricAggregator.handleInferenceMetric(modelName, modelVersion);
-        Job job = new RestJob(ctx, modelName, modelVersion, WorkerCommands.PREDICT, input, 1000); // TODO
+        Job job = new RestJob(ctx, modelName, modelVersion, WorkerCommands.PREDICT, input, Integer.parseInt(deadline));
         if (!ModelManager.getInstance().addJob(job)) {
             String responseMessage =
                     ApiUtils.getInferenceErrorResponseMessage(modelName, modelVersion);
@@ -280,9 +283,6 @@ public class InferenceRequestHandler extends HttpRequestHandlerChain {
         } else {
             byte[] content = NettyUtils.getBytes(req.content());
             inputData.addParameter(new InputParameter("body", content, contentType));
-
-            inputData.addParameter(
-                new InputParameter("gpu_layers", "1,0,1,0,1,1,1,1"));
         }
         return inputData;
     }
