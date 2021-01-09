@@ -224,12 +224,13 @@ class BaseHandler(abc.ABC):
         should_update = False
         cnt = 0
         for k, v in self.model.layer_gpus.items():
-            print("\t\tYYYY Layer: origin vs new:", k,  v, self.context.gpu_layers[cnt])
             
             # context's GPU layers are less than the model's, keep the remaining the same
             if cnt == len(self.context.gpu_layers):
                 break
-            
+
+            print("\t\tYYYY Layer: origin vs new:", k,  v, self.context.gpu_layers[cnt])
+
             if v != self.context.gpu_layers[cnt]:
                 self.model.layer_gpus[k] = self.context.gpu_layers[cnt]
                 cnt += 1
