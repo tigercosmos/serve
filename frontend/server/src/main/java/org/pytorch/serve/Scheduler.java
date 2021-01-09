@@ -6,6 +6,9 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.pytorch.serve.util.messages.InputParameter;
+import org.pytorch.serve.SchedulerThread;
+import java.util.ArrayList;
+import java.util.Collection;
 
 public class Scheduler {
     private Logger logger = LoggerFactory.getLogger(ModelServer.class);
@@ -20,26 +23,16 @@ public class Scheduler {
     // deque for the scheduled job
     private LinkedBlockingDeque<Job> jobDeque;
 
-    class SchedulerJob {
-        private Logger logger = LoggerFactory.getLogger(SchedulerJob.class);
-    
-        private String modelName;
-        private String jobID;
-        private Integer executedId;
-    
-        public SchedulerJob(Integer eid, String model_name, String jid) {
-            modelName = model_name;
-            jobID = jid;
-            executedId = eid;
-    
-        }
-    }
-
     public Scheduler() {
         logger.info("XXXXXXXXX start the scheduler");
         jobDeque = new LinkedBlockingDeque<Job>(100);
         jobList = new CopyOnWriteArrayList<Job>();
         counter = 0;
+
+        logger.info("XXXXXXXXX create the scheduler thread");
+        Runnable runnable = new SchedulerThread(this);
+        Thread thread = new Thread(runnable);
+        thread.start();
     }
 
     public int getGpuNumber() {
@@ -66,16 +59,30 @@ public class Scheduler {
         }
     }
 
-    public void schedule() {
-        Job target = jobList.get(jobList.size() - 1);
-        jobDeque.offer(target);
+    public void schedule(long deadline) {
+        
+        ArrayList<Integer>  jobs = new ArrayList<Integer>(20);
+        for(int i = 0; i < jobList.size(); i ++) {
+            if (jobList.get(i).getDeadline() < deadline) {
+                jobs.add(i);
+            }
+        }
+        jobs.sort(null);
+
+        for(int i = 0; i < jobs.size(); i ++) {
+            int jobId = jobs.get(i);
+            Job target = jobList.get(jobId);
+            target.getPayload().addParameter(
+                new InputParameter("gpu_layers", "1,0,1,0,1,1,1,1"));
+            jobDeque.offer(target);
+            jobList.remove(jobId);
+        }
     }
 
     public boolean addJob(Job job) {
         logger.info("XXXXXXXXX add new job in scheduler {}, {}, {}",
             counter++, job.getModelName(), job.getJobId());
         jobList.add(job);
-        schedule();
 
         return true;
     }

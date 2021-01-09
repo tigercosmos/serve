@@ -29,6 +29,10 @@ public abstract class Job {
 	    logger.info("XXXXXXXXXXXXXXXXXXXXXXX  NEW JOB {} {}, begin: {}, deadline: {}", cmd, modelName, begin, deadline);
     }
 
+    public long getDeadline() {
+        return deadline;
+    }
+
     public String getJobId() {
         return input.getRequestId();
     }
