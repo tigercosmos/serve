@@ -63,7 +63,8 @@ public class Scheduler {
         
         ArrayList<Integer>  jobs = new ArrayList<Integer>(20);
         for(int i = 0; i < jobList.size(); i ++) {
-            if (jobList.get(i).getDeadline() < deadline) {
+            Job job = jobList.get(i);
+            if (job.getDeadline() < deadline) {
                 jobs.add(i);
             }
         }
@@ -81,7 +82,10 @@ public class Scheduler {
             target.getPayload().addParameter(
                 new InputParameter("gpu_layers", layers));
             jobDeque.offer(target);
-            jobList.remove(jobId);
+        }
+
+        for(int i = jobs.size() -1; i >= 0 ; i--) {
+            jobList.remove(i);
         }
     }
 
