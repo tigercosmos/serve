@@ -13,12 +13,31 @@ async function send(deadline, layers, counter) {
     logger.info(`Request ${counter}:`, res.data)
 }
 
+async function sleep(ms) {
+    await new Promise(resolve => setTimeout(resolve, ms));
+    return;
+}
+
 async function main() {
-    for(let i = 0; i < 10; i++) {
-        const deadline = 10000000;
-        const layers = "0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1";
-        send(deadline, layers, i);
+    const configs = [
+        // "0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1",
+        // "2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2",
+        "1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1",
+        // "1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2",
+    ]
+
+    const rounds = 10;
+    const iter = 15;
+
+    for(let round = 0; round < rounds; round++) {
+        for(let i = 0; i < iter; i++) {
+            const deadline = 100000000; // 100ms
+            const layers = configs[i % configs.length];
+            send(deadline, layers, round * iter + i);
+        }
+        await sleep(50); // sleep 100ms
     }
+
 }
 
 main();
