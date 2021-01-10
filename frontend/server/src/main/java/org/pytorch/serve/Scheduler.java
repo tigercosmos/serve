@@ -72,8 +72,14 @@ public class Scheduler {
         for(int i = 0; i < jobs.size(); i ++) {
             int jobId = jobs.get(i);
             Job target = jobList.get(jobId);
+
+            String layers = "0,0,0,0,0,0,0,0,0,0";
+            if(target.getGPULayers() != null){
+                layers = target.getGPULayers();
+            }
+
             target.getPayload().addParameter(
-                new InputParameter("gpu_layers", "1,0,1,0,1,1,1,1"));
+                new InputParameter("gpu_layers", layers));
             jobDeque.offer(target);
             jobList.remove(jobId);
         }

@@ -34,9 +34,10 @@ public class RestJob extends Job {
             String version,
             WorkerCommands cmd,
             RequestInput input,
-            long deadlineTime
+            long deadlineTime,
+            String gpu_layers
         ) {
-        super(modelName, version, cmd, input, deadlineTime);
+        super(modelName, version, cmd, input, deadlineTime, gpu_layers);
         this.ctx = ctx;
     }
 

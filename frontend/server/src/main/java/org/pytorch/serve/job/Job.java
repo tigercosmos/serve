@@ -15,10 +15,11 @@ public abstract class Job {
     private long begin;
     private long scheduled;
     private long deadline;
+    private String gpu_layers;
 
     private static final Logger logger = LoggerFactory.getLogger(Job.class);
 
-    public Job(String modelName, String version, WorkerCommands cmd, RequestInput input, long deadlineTime) {
+    public Job(String modelName, String version, WorkerCommands cmd, RequestInput input, long deadlineTime, String gpu_layers) {
         this.modelName = modelName;
         this.cmd = cmd;
         this.input = input;
@@ -26,7 +27,12 @@ public abstract class Job {
         begin = System.nanoTime();
         scheduled = begin;
         deadline = begin + deadlineTime;
-	    logger.info("XXXXXXXXXXXXXXXXXXXXXXX  NEW JOB {} {}, begin: {}, deadline: {}", cmd, modelName, begin, deadline);
+        this.gpu_layers = gpu_layers;
+	    logger.info("XXXXXXXXXXXXXXXXXXXXXXX  NEW JOB {} {}, begin: {}, deadline: {}, layers: {}", cmd, modelName, begin, deadline, gpu_layers);
+    }
+
+    public String getGPULayers() {
+        return gpu_layers;
     }
 
     public long getDeadline() {

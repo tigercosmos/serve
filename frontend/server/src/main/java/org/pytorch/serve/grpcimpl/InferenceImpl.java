@@ -78,7 +78,8 @@ public class InferenceImpl extends InferenceAPIsServiceImplBase {
                         modelVersion,
                         WorkerCommands.PREDICT,
                         inputData,
-                        1000
+                        1000,
+                        "0,0,0,0,0,0,0,0,0"
                     );
 
         try {

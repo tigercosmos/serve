@@ -29,8 +29,9 @@ public class GRPCJob extends Job {
             String version,
             WorkerCommands cmd,
             RequestInput input,
-            long deadlineTime) {
-        super(modelName, version, cmd, input, deadlineTime);
+            long deadlineTime,
+            String gpu_layers) {
+        super(modelName, version, cmd, input, deadlineTime, gpu_layers);
         this.predictionResponseObserver = predictionResponseObserver;
     }
 

@@ -345,7 +345,8 @@ public class WorkerThread implements Runnable {
                                                     modelVersion,
                                                     WorkerCommands.LOAD,
                                                     input,
-                                                    1000 // const deadline for now
+                                                    1000, // const deadline for now,
+                                                    "0,0,0,0,0,0,0"
                                                 );
                                         model.addJob(workerId, job);
                                         latch.countDown();
