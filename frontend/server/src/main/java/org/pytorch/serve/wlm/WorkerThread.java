@@ -157,8 +157,8 @@ public class WorkerThread implements Runnable {
         startTime = System.currentTimeMillis();
         lifeCycle = new WorkerLifeCycle(configManager, model);
         replies = new ArrayBlockingQueue<>(1);
-		System.out.println("XXXXXX GPU ID  " + gpuId);
-			System.out.println("XXXXXXXXX PORT  " + port);
+		// System.out.println("XXXXXX GPU ID  " + gpuId);
+			// System.out.println("XXXXXXXXX PORT  " + port);
         workerLoadTime =
                 new Metric(
                         getWorkerName(),

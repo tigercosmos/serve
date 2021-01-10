@@ -69,7 +69,7 @@ public class ModelServer {
 
     /** Creates a new {@code ModelServer} instance. */
     public ModelServer(ConfigManager configManager) {
-        logger.info("XXXXXXXXXXXXX new a ModelServer");
+        // logger.info("XXXXXXXXXXXXX new a ModelServer");
         this.configManager = configManager;
         serverGroups = new ServerGroups(configManager);
         scheduler = new Scheduler();

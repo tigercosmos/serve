@@ -61,7 +61,7 @@ public class InferenceRequestHandler extends HttpRequestHandlerChain {
                 s += segments[i] + ", ";
               }
 
-              logger.info("XXXXXXXXXXXXXXXXX   predict request: " + s);
+            //   logger.info("XXXXXXXXXXXXXXXXX   predict request: " + s);
 
                 switch (segments[1]) {
                     case "ping":
@@ -230,7 +230,7 @@ public class InferenceRequestHandler extends HttpRequestHandlerChain {
             }
         }
 
-        logger.info("XXXXXXXXXXX Predict Model: " + modelName);
+        // logger.info("XXXXXXXXXXX Predict Model: " + modelName);
 
         if (HttpMethod.OPTIONS.equals(req.method())) {
             ModelManager modelManager = ModelManager.getInstance();

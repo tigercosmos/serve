@@ -69,7 +69,7 @@ class Service(object):
                 if parameter["name"] == "gpu_layers":
                     tmp = parameter["value"].decode("utf-8").split(",")
                     gpu_layers = [int(x) for x in tmp]
-                    print("\n\t\tYYYYYYYY GPU layer config from frontend: ", gpu_layers )         
+                    # print("\n\t\tYYYYYYYY GPU layer config from frontend: ", gpu_layers )         
 
             # Request level headers are populated here
             if request_batch.get("headers") is not None:
@@ -100,8 +100,8 @@ class Service(object):
         self.context.metrics = metrics
         self.context.gpu_layers = gpu_layers
 
-        print("\n\t\tYYYYYYYYYYYYYYY Enter Servie\t\t\n")
-        print("\n\t\tYYYYYYYYYYYYYYYY {}\t\t\n".format(self.context._system_properties))
+        # print("\n\t\tYYYYYYYYYYYYYYY Enter Servie\t\t\n")
+        # print("\n\t\tYYYYYYYYYYYYYYYY {}\t\t\n".format(self.context._system_properties))
 
         start_time = time.time()
 

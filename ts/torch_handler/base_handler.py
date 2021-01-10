@@ -36,7 +36,7 @@ class BaseHandler(abc.ABC):
         self.map_location = None
         self.explain = False
         self.target = 0
-        print("\n\t\tYYYYYYYYYY BASE HANDLER!!!\t\t\n")
+        # print("\n\t\tYYYYYYYYYY BASE HANDLER!!!\t\t\n")
 
     def initialize(self, context):
         """Initialize function loads the model.pt file and initialized the model object.
@@ -58,7 +58,7 @@ class BaseHandler(abc.ABC):
             else self.map_location
         )
         self.device_id = properties.get("gpu_id")
-        print("\n\t\tYYYYYYYYYYYYYYYYYYY device id {}\t\t\n".format(self.device))
+        # print("\n\t\tYYYYYYYYYYYYYYYYYYY device id {}\t\t\n".format(self.device))
         self.manifest = context.manifest
 
         model_dir = properties.get("model_dir")
@@ -95,7 +95,7 @@ class BaseHandler(abc.ABC):
         for key, value in self.model.layer_gpus.items():
             self.model.layer_gpus[key] = s % len(self.model.device_ids) # _get_device_index(self.device, True)
             s += 1
-            print("\n\t\tYYYYYYYYYYY gpu layers: ", key, self.model.layer_gpus[key])
+            # print("\n\t\tYYYYYYYYYYY gpu layers: ", key, self.model.layer_gpus[key])
 
         # after you modified the layer_gpus, you should update the flow
         self.model.update_flow()
@@ -229,7 +229,7 @@ class BaseHandler(abc.ABC):
             if cnt == len(self.context.gpu_layers):
                 break
 
-            print("\t\tYYYY Layer: origin vs new:", k,  v, self.context.gpu_layers[cnt])
+            # print("\t\tYYYY Layer: origin vs new:", k,  v, self.context.gpu_layers[cnt])
 
             if v != self.context.gpu_layers[cnt]:
                 self.model.layer_gpus[k] = self.context.gpu_layers[cnt]
@@ -237,7 +237,7 @@ class BaseHandler(abc.ABC):
                 should_update = True            
 
         if should_update:
-            print("\n\t\tYYYYYYYYYYYYYYY layer GPU change, update flow\t\t\n")
+            # print("\n\t\tYYYYYYYYYYYYYYY layer GPU change, update flow\t\t\n")
             self.model.update_flow()
 
 

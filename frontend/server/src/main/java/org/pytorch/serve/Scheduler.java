@@ -24,12 +24,12 @@ public class Scheduler {
     private LinkedBlockingDeque<Job> jobDeque;
 
     public Scheduler() {
-        logger.info("XXXXXXXXX start the scheduler");
+        // logger.info("XXXXXXXXX start the scheduler");
         jobDeque = new LinkedBlockingDeque<Job>(100);
         jobList = new CopyOnWriteArrayList<Job>();
         counter = 0;
 
-        logger.info("XXXXXXXXX create the scheduler thread");
+        // logger.info("XXXXXXXXX create the scheduler thread");
         Runnable runnable = new SchedulerThread(this);
         Thread thread = new Thread(runnable);
         thread.start();
@@ -61,10 +61,11 @@ public class Scheduler {
 
     public void schedule(long deadline) {
         
-        ArrayList<Integer>  jobs = new ArrayList<Integer>(20);
+        long current = System.nanoTime();
+        ArrayList<Integer>  jobs = new ArrayList<Integer>(100);
         for(int i = 0; i < jobList.size(); i ++) {
             Job job = jobList.get(i);
-            if (job.getDeadline() < deadline) {
+            if (job.getDeadline() < current || job.getDeadline() < deadline) {
                 jobs.add(i);
             }
         }
@@ -98,8 +99,8 @@ public class Scheduler {
     }
 
     public void addFirst(Job job) {
-        logger.info("XXXXXXXXX add first new job in scheduler {}, {}, {}",
-            counter++, job.getModelName(), job.getJobId());
+        // logger.info("XXXXXXXXX add first new job in scheduler {}, {}, {}",
+            // counter++, job.getModelName(), job.getJobId());
         jobList.add(0, job);
     }
 }

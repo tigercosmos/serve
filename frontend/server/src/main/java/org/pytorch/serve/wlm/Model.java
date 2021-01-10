@@ -156,7 +156,7 @@ public class Model {
     }
 
     public void removeJobQueue(String threadId) {
-        logger.info("XXXXX remove Job queue");
+        // logger.info("XXXXX remove Job queue");
 
         if (!threadId.equals(DEFAULT_DATA_QUEUE)) {
             jobsDb.remove(threadId);
@@ -164,14 +164,14 @@ public class Model {
     }
 
     public boolean addJob(Job job) {
-        logger.info("XXXXX addJob2");
+        // logger.info("XXXXX addJob2");
 
         // return jobsDb.get(DEFAULT_DATA_QUEUE).offer(job);
         return scheduler.addJob(job);
     }
 
     public void addFirst(Job job) {
-        logger.info("XXXXX addFirst");
+        // logger.info("XXXXX addFirst");
         // jobsDb.get(DEFAULT_DATA_QUEUE).addFirst(job);
         scheduler.addFirst(job);
     }
@@ -205,7 +205,7 @@ public class Model {
             // jobsQueue = jobsDb.get(DEFAULT_DATA_QUEUE);
             // j = jobsQueue.poll(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
             j = scheduler.pollScheduledJob();
-            logger.info("XXXXXXXX get first job: {}", Objects.requireNonNull(j).getJobId());
+            // logger.info("XXXXXXXX get first job: {}", Objects.requireNonNull(j).getJobId());
 
             jobsRepo.put(j.getJobId(), j);
             long begin = System.currentTimeMillis();
@@ -218,14 +218,14 @@ public class Model {
                 long end = System.currentTimeMillis();
                 maxDelay -= end - begin;
                 begin = end;
-                logger.info("XXXXXXXX get other job: {}", Objects.requireNonNull(j).getJobId());
+                // logger.info("XXXXXXXX get other job: {}", Objects.requireNonNull(j).getJobId());
 
                 jobsRepo.put(j.getJobId(), j);
                 if (maxDelay <= 0) {
                     break;
                 }
             }
-            logger.info("XXXXXX sending jobs, size: {}", jobsRepo.size());
+            // logger.info("XXXXXX sending jobs, size: {}", jobsRepo.size());
         } finally {
             if (lock.isHeldByCurrentThread()) {
                 lock.unlock();

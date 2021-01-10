@@ -168,7 +168,7 @@ public class WorkLoadManager {
                 gpuId = gpuCounter.accumulateAndGet(maxGpu, (prev, maxGpuId) -> ++prev % maxGpuId);
             }
 
-            logger.info("XXXXXXXXXXXX adding a worker with gpuID: " + gpuId);
+            // logger.info("XXXXXXXXXXXX adding a worker with gpuID: " + gpuId);
 
             BatchAggregator aggregator = new BatchAggregator(model);
             WorkerThread thread =
