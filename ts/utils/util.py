@@ -94,33 +94,16 @@ def map_class_to_label(probs, mapping=None, lbl_classes=None):
     return results
 
 # https://github.com/rniczh/torch-model-split
-def timer(func):
-    @functools.wraps(func)
-    def wrapper_timer(*args, **kwargs):
-        start = torch.cuda.Event(enable_timing=True)
-        end = torch.cuda.Event(enable_timing=True)
-        start.record()
-        value = func(*args, **kwargs)
-        end.record()
-        torch.cuda.synchronize()
-        elapsed_time = start.elapsed_time(end)
-        func_name = func.__self__.__class__.__name__
-        print(f"Elapsed time: {elapsed_time:0.4f} ms [{func_name}]")
-        return value
-    return wrapper_timer
-
 class _ChildMappingVisitor(ast.NodeVisitor):
-    def __init__(self, module=None, output_device=None, layer_gpus=OrderedDict(), is_fine=False, old_functions={}, update_function=True, no_modify_return=False):
+    def __init__(self, module=None, output_device=None, layer_gpus=OrderedDict(), is_fine=False, old_functions={}):
         super(_ChildMappingVisitor)
         self.layer_gpus = layer_gpus
         self.output_device = output_device
         self.data = set()
         self.module = module
         self.is_fine = is_fine
-        self.no_modify_return=no_modify_return
+        self.no_modify_return=False
         self.old_functions = old_functions
-        self.modified = False
-        self.update_function = update_function
 
     def visit_Return(self, node):
         ast.NodeVisitor.generic_visit(self, node)
@@ -169,7 +152,6 @@ class _ChildMappingVisitor(ast.NodeVisitor):
             if (value.id == 'self' and
                 attr in self.layer_gpus and
                 isinstance(value.ctx, ast.Load)):
-
                 # get the layer device id
                 device_id = self.layer_gpus[attr]
 
@@ -183,12 +165,13 @@ class _ChildMappingVisitor(ast.NodeVisitor):
                               if isinstance(arg, ast.Name) and
                               arg.id in self.data else arg for arg in node.args ]
 
-                self.modified = True
-
             # attr is not in layer_gpus, traversal the function to modify
-            elif value.id == 'self' and self.update_function:
+            elif value.id == 'self':
                 func = getattr(self.module, attr)
 
+                # save the func
+                self.old_functions[attr] = copy.deepcopy(func)
+                
                 source = textwrap.dedent(inspect.getsource(func))
                 tree = ast.parse(source)
 
@@ -198,20 +181,13 @@ class _ChildMappingVisitor(ast.NodeVisitor):
                 ast.fix_missing_locations(tree)
                 self.no_modify_return=False
 
+                name = func.__name__
+                code = compile(tree, filename="<ast>_" + name, mode="exec")
 
-                if self.modified:
-                    # save the func
-                    self.old_functions[attr] = copy.deepcopy(func)
-                    
-                    name = func.__name__
-                    code = compile(tree, filename="<ast>_" + name, mode="exec")
-                    
-                    namespace = self.module.forward.__globals__
-                    exec(code, namespace)
-                    setattr(self.module, attr, types.MethodType(namespace[attr], self.module))
+                namespace = self.module.forward.__globals__
+                exec(code, namespace)
 
-                    self.modified = False
-
+                setattr(self.module, attr, types.MethodType(namespace[attr], self.module))
 
 class _FineGrainedMappingVisitor(ast.NodeVisitor):
     def __init__(self, output_device=None, layer_gpus=OrderedDict(), operator_gpus=OrderedDict(), focus_operator=False):
@@ -258,7 +234,7 @@ class _FineGrainedMappingVisitor(ast.NodeVisitor):
 
         
 class DataFlow(Module):
-    def __init__(self, module, device_ids=None, output_device=None, dim=0, inference_only=False, clear_cache=True, fine_grained=False, focus_operator=False, enable_clone=False):
+    def __init__(self, module, device_ids=None, output_device=None, dim=0, inference_only=False, clear_cache=True, fine_grained=False, focus_operator=False):
         super(DataFlow, self).__init__()
 
         device_type = _get_available_device_type()
@@ -282,8 +258,6 @@ class DataFlow(Module):
         self.clear_cache = clear_cache
         self.fine_grained = fine_grained
         self.focus_operator = focus_operator
-        self.submodule_updated = False
-        self.enable_clone = enable_clone
 
         # because inference only, so disable the gradient in model
         if inference_only:
@@ -312,36 +286,7 @@ class DataFlow(Module):
         self.old_forward = copy.deepcopy(self.module.forward)
         self.old_functions = {}
 
-        self._time = False
 
-        self.clone_modules = {}
-        for i in self.device_ids:
-            self.clone_modules[i] = {}
-
-        if self.enable_clone:
-            for device_id in self.device_ids:
-                for n, m in self.module.named_children():
-                    self.clone_modules[device_id][n] = copy.deepcopy(m)
-                
-
-
-    def _modify_function(self, visitor, attr, func):
-        # get the forward source code and convert it into AST
-        source = textwrap.dedent(inspect.getsource(self.old_functions[attr]))
-        tree = ast.parse(source)
-
-        # udpate the AST
-        visitor.visit(tree)
-        ast.fix_missing_locations(tree)
-
-        # recompile
-        name = func.__name__
-        code = compile(tree, filename="<ast>_" + name, mode="exec")
-        namespace = self.module.forward.__globals__
-        exec(code, namespace)
-
-        return types.MethodType(namespace[attr], self.module)
-    
     def _modify_forward(self, visitor, name, module):
         # get the forward source code and convert it into AST
         source = textwrap.dedent(inspect.getsource(module.forward))
@@ -350,7 +295,7 @@ class DataFlow(Module):
         # udpate the AST
         visitor.visit(tree)
         ast.fix_missing_locations(tree)
-
+        
         # recompile
         code = compile(tree, filename="<ast>_" + name, mode="exec")
         namespace = module.forward.__globals__
@@ -358,40 +303,25 @@ class DataFlow(Module):
 
         return types.MethodType(namespace['forward'], module)
 
-    def update_flow(self, prof_time=False):
+        
+    def update_flow(self):
         self.module.forward = self.old_forward
 
-        # for attr in self.old_functions:
-        #     setattr(self.module, attr, self.old_functions[attr])
+        for attr in self.old_functions:
+            setattr(self.module, attr, self.old_functions[attr])
         
         if self.fine_grained:
             for n, m in self.module.named_modules():
                 # terminal
                 if len(m._modules) == 0:
                     m.forward = self.old_forwards[n]
-                    if prof_time:
-                        m.forward = timer(m.forward)
                     m.cuda(self.operator_gpus[type(m).__name__] \
                            if self.focus_operator else self.layer_gpus[n])
 
         else:
             # update the submodule gpus
-            if self.enable_clone:
-                mms = list(self.module._modules.items())
-                i = 0
-                for n, m in mms:
-                    if prof_time:
-                        m.forward = timer(m.forward)
-                    device_id = self.layer_gpus[n]
-                    self.module._modules[n] = self.clone_modules[device_id][n].cuda(device_id)
-                    i += 1
-            else:
-
-                for n, m in self.module.named_children():
-                    if prof_time:
-                        m.forward = timer(m.forward)
-                    
-                    m.cuda(self.layer_gpus[n])
+            for n, m in self.module.named_children():
+                m.cuda(self.layer_gpus[n])
 
         if self.clear_cache:
             torch.cuda.empty_cache()
@@ -419,27 +349,12 @@ class DataFlow(Module):
                 return copy_cat(arg, *args)
 
             namespace['torch'].cat = copy.deepcopy(torch_cat)
-
+                
         cv = _ChildMappingVisitor(module=self.module, layer_gpus=self.layer_gpus,
-                                  output_device=self.output_device,
-                                  is_fine=self.fine_grained,
-                                  old_functions = self.old_functions,
-                                  update_function = False if self.fine_grained or self.submodule_updated else True,
-                                  no_modify_return = True if self.submodule_updated else False)
-
-
-        if self.submodule_updated:
-            # only update the old_functions
-            for attr in self.old_functions:
-                func = getattr(self.module, attr)
-                setattr(self.module, attr, self._modify_function(cv, attr, func))
-            
-        cv.no_modify_return = False
+                                  output_device=self.output_device, is_fine=self.fine_grained,
+                                  old_functions = self.old_functions)
+        
         self.module.forward = self._modify_forward(cv, "main", self.module)
-        self.submodule_updated = True
 
     def forward(self, *inputs, **kwargs):
         return self.module(*inputs, **kwargs)
-
-
-        
