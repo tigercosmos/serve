@@ -209,6 +209,12 @@ public class Model {
 
             jobsRepo.put(j.getJobId(), j);
             long begin = System.currentTimeMillis();
+
+
+            // ****** XXX HARD  CODE XXX *****
+            batchSize = 32;
+            // *******************************
+
             for (int i = 0; i < batchSize - 1; ++i) {
                 // j = jobsQueue.poll(maxDelay, TimeUnit.MILLISECONDS);
                 j = scheduler.pollScheduledJob();
@@ -225,7 +231,7 @@ public class Model {
                     break;
                 }
             }
-            // logger.info("XXXXXX sending jobs, size: {}", jobsRepo.size());
+            logger.info("XXXXXX sending jobs, size: {}", jobsRepo.size());
         } finally {
             if (lock.isHeldByCurrentThread()) {
                 lock.unlock();
