@@ -65,7 +65,7 @@ public class Scheduler {
         ArrayList<Integer>  jobs = new ArrayList<Integer>(100);
         for(int i = 0; i < jobList.size(); i ++) {
             Job job = jobList.get(i);
-            if (job.getDeadline() < current || job.getDeadline() < deadline) {
+            if (job.getDeadline() > current || job.getDeadline() < deadline) {
                 jobs.add(i);
             }
         }

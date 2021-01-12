@@ -21,7 +21,7 @@ public class SchedulerThread implements Runnable {
         while(true) {
             int interval = 5; //ms
             long current = System.nanoTime();
-            scheduler.schedule(current + interval * 1000);
+            scheduler.schedule(current + interval * 1000000);
             try
             {
                 Thread.sleep(5);
