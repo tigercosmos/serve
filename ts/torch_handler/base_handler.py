@@ -88,7 +88,7 @@ class BaseHandler(abc.ABC):
 
 
         # wrap the model to DataFlow class
-        self.model = DataFlow(self.model, inference_only=True, output_device=self.device, clear_cache=True)
+        self.model = DataFlow(self.model, inference_only=True, output_device=self.device, clear_cache=False, enable_clone=True)
         # TODO change the layer gpus here
         # the scheduler should modify the layer_gpus for configuring the gpu for each layer
         s = 0
