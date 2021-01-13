@@ -204,7 +204,7 @@ public class Model {
             long maxDelay = maxBatchDelay;
             // jobsQueue = jobsDb.get(DEFAULT_DATA_QUEUE);
             // j = jobsQueue.poll(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-            j = scheduler.pollScheduledJob();
+            j = scheduler.pollScheduledJob(Long.MAX_VALUE);
             // logger.info("XXXXXXXX get first job: {}", Objects.requireNonNull(j).getJobId());
 
             jobsRepo.put(j.getJobId(), j);
@@ -217,7 +217,7 @@ public class Model {
 
             for (int i = 0; i < batchSize - 1; ++i) {
                 // j = jobsQueue.poll(maxDelay, TimeUnit.MILLISECONDS);
-                j = scheduler.pollScheduledJob();
+                j = scheduler.pollScheduledJob(maxDelay);
                 if (j == null) {
                     break;
                 }

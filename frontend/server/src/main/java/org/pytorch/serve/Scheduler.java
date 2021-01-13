@@ -51,9 +51,9 @@ public class Scheduler {
         modelNumber += n;
     }
 
-    public Job pollScheduledJob() {
+    public Job pollScheduledJob(long maxDelay) {
         try {
-            return jobDeque.poll(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+            return jobDeque.poll(maxDelay, TimeUnit.MILLISECONDS);
         } catch(Exception e) {
             return null;
         }
