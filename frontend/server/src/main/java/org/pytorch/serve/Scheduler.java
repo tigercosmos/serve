@@ -25,7 +25,7 @@ public class Scheduler {
 
     public Scheduler() {
         // logger.info("XXXXXXXXX start the scheduler");
-        jobDeque = new LinkedBlockingDeque<Job>(100);
+        jobDeque = new LinkedBlockingDeque<Job>(2000);
         jobList = new CopyOnWriteArrayList<Job>();
         counter = 0;
 
@@ -62,7 +62,7 @@ public class Scheduler {
     public void schedule(long deadline) {
         
         long current = System.nanoTime();
-        ArrayList<Integer>  jobs = new ArrayList<Integer>(100);
+        ArrayList<Integer>  jobs = new ArrayList<Integer>(2000);
         for(int i = 0; i < jobList.size(); i ++) {
             Job job = jobList.get(i);
             if (job.getDeadline() > current || job.getDeadline() < deadline) {
